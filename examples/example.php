@@ -7,7 +7,7 @@ use SimpleDynamo\SimpleDynamo;
 $db = new SimpleDynamo(array(
 	'profile'=>'dynamo',
 	'key'=>'id',
-	'table'=>'sessions_micropay',
+	'table'=>'sampletable',
 	'region'=>'us-west-2',
 	'error'=>function($result){
 		throw new Exception($result);
