@@ -12,15 +12,20 @@ class SimpleDynamo
 	private $marshaler;
 
 	public function __construct(array $params){
-		$this->client = DynamoDbClient::factory(array(
-			'profile'=> empty($params['profile']) ? 'default' : $params['profile'],
-			'region'=>$params['region'],
-			'version'=>'2012-08-10'
-		));
+		$this->errorhandler = $params['error'];
+		try{
+			$this->client = DynamoDbClient::factory(array(
+				'profile'=> empty($params['profile']) ? 'default' : $params['profile'],
+				'region'=>$params['region'],
+				'version'=>'2012-08-10'
+			));
+		}
+		catch(\Exception $e){
+			$this->E($e->getMessage());
+		}
 		$this->table = $params['table'];
 		$this->key = $params['key'];
 		$this->marshaler = new Marshaler();
-		$this->errorhandler = $params['error'];
 	}
 
 	private function encode($value){
@@ -41,14 +46,14 @@ class SimpleDynamo
 				)
 			));
 			if($result['@metadata']['statusCode'] !== 200){
-				$this->errorhandler($result);
+				$this->errorhandler->__invoke($result);
 			}
 			else{
 				return $this->decode($result['Item']['payload']);
 			}
 		}
 		catch(\Exception $e){
-			$this->errorhandler($e);
+			$this->errorhandler->__invoke($e);
 		}
 	}
 
@@ -62,11 +67,11 @@ class SimpleDynamo
 				)
 			));
 			if($result['@metadata']['statusCode'] !== 200){
-				$this->errorhandler($result);
+				$this->errorhandler->__invoke($result);
 			}
 		}
 		catch(\Exception $e){
-			$this->errorhandler($e);
+			$this->errorhandler->__invoke($e);
 		}
 	}
 
@@ -79,11 +84,11 @@ class SimpleDynamo
 				)
 			));
 			if($result['@metadata']['statusCode'] !== 200){
-				$this->errorhandler($result);
+				$this->errorhandler->__invoke($result);
 			}
 		}
 		catch(\Exception $e){
-			$this->errorhandler($e);
+			$this->errorhandler->__invoke($e);
 		}
 	}
 
@@ -109,10 +114,10 @@ class SimpleDynamo
 				)
 			));
 			if($result['@metadata']['statusCode'] !== 200){
-				$this->errorhandler($result);
+				$this->errorhandler->__invoke($result);
 			}
 		}catch(\Exception $e){
-			$this->errorhandler($e);
+			$this->errorhandler->__invoke($e);
 		}
 	}
 
