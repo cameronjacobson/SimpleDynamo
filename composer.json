@@ -1,0 +1,11 @@
+{
+    "name": "simpledynamo/simpledynamo",
+    "require": {
+        "aws/aws-sdk-php": "3.4.*"
+    },
+    "autoload":{
+        "psr-0": {
+            "SimpleDynamo":"src/"
+        }
+    }
+}
