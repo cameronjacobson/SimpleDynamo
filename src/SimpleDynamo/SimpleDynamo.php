@@ -48,7 +48,7 @@ class SimpleDynamo
 			}
 		}
 		catch(\Exception $e){
-			return array('error'=>$e->getMessage());
+			$this->errorhandler($e);
 		}
 	}
 
@@ -66,7 +66,7 @@ class SimpleDynamo
 			}
 		}
 		catch(\Exception $e){
-			return array('error'=>$e->getMessage());
+			$this->errorhandler($e);
 		}
 	}
 
@@ -83,7 +83,7 @@ class SimpleDynamo
 			}
 		}
 		catch(\Exception $e){
-			return array('error'=>$e->getMessage());
+			$this->errorhandler($e);
 		}
 	}
 
