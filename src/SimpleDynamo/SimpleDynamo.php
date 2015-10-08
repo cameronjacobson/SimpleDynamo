@@ -33,7 +33,7 @@ class SimpleDynamo
 	}
 
 	private function decode($value){
-		return $this->marshaler->unmarshalValue($value);
+		return empty($value) ? array() : $this->marshaler->unmarshalValue($value);
 	}
 
 	public function get($key,$consistentread = true){
