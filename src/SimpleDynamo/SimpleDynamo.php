@@ -10,6 +10,7 @@ class SimpleDynamo
 	private $client;
 	private $table;
 	private $marshaler;
+	private $consistentread;
 
 	public function __construct(array $params){
 		$this->errorhandler = $params['error'];
@@ -26,6 +27,15 @@ class SimpleDynamo
 		$this->table = $params['table'];
 		$this->key = $params['key'];
 		$this->marshaler = new Marshaler();
+		$this->consistentread = isset($params['consistentread']) ? (bool)$params['consistentread'] : true;
+	}
+
+	public function getConsistentRead(){
+		return $this->consistentread;
+	}
+
+	public function setConsistentRead($v){
+		$this->consistentread = (bool)$v;
 	}
 
 	private function encode($value){
@@ -36,11 +46,11 @@ class SimpleDynamo
 		return empty($value) ? array() : $this->marshaler->unmarshalValue($value);
 	}
 
-	public function get($key,$consistentread = true){
+	public function get($key,$table = null){
 		try{
 			$result = $this->client->getItem(array(
-				'ConsistentRead' => $consistentread,
-				'TableName' => $this->table,
+				'ConsistentRead' => $this->consistentread,
+				'TableName' => isset($table) ? $table : $this->table,
 				'Key'=>array(
 					$this->key => $this->encode($key)
 				)
@@ -57,13 +67,13 @@ class SimpleDynamo
 		}
 	}
 
-	public function set($key,$value){
+	public function set($key,$value,$table = null){
 		try{
 			$result = $this->client->putItem(array(
-				'TableName'=>$this->table,
-				'Item'=>array(
+				'TableName' => isset($table) ? $table : $this->table,
+				'Item' => array(
 					$this->key => $this->encode($key),
-					'payload'=>$this->encode($value)
+					'payload' => $this->encode($value)
 				)
 			));
 			if($result['@metadata']['statusCode'] !== 200){
