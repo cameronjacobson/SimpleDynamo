@@ -60,10 +60,8 @@ class SimpleDynamo
 			}
 			else{
 				$payload = array();
-				if($result['Item'] instanceof Traversable){
-					foreach($result['Item'] as $k=>$v){
-						$payload[$k] = $this->decode($v);
-					}
+				foreach((array)$result['Item'] as $k=>$v){
+					$payload[$k] = $this->decode($v);
 				}
 				return isset($payload['__payload__']) ? $payload['__payload__'] : $payload;
 			}
@@ -76,7 +74,7 @@ class SimpleDynamo
 	public function set($key,$value,$table = null){
 		try{
 			$payload = array();
-			if(is_array($value)){
+			if($value instanceof Traversable){
 				foreach($value as $k=>$v){
 					$payload[$k] = $this->encode($v);
 				}
@@ -87,7 +85,6 @@ class SimpleDynamo
 				);
 			}
 			$payload[$this->key] = $this->encode($key);
-
 			$result = $this->client->putItem(array(
 				'TableName' => isset($table) ? $table : $this->table,
 				'Item' => $payload
