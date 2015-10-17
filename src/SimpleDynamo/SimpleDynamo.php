@@ -59,7 +59,11 @@ class SimpleDynamo
 				$this->errorhandler->__invoke($result);
 			}
 			else{
-				return $this->decode($result['Item']['payload']);
+				$payload = array();
+				foreach($result['Item'] as $k=>$v){
+					$payload[$k] = $this->decode($v);
+				}
+				return isset($payload['__payload__']) ? $payload['__payload__'] : $payload;
 			}
 		}
 		catch(\Exception $e){
@@ -69,12 +73,22 @@ class SimpleDynamo
 
 	public function set($key,$value,$table = null){
 		try{
+			$payload = array();
+			if(is_array($value)){
+				foreach($value as $k=>$v){
+					$payload[$k] = $this->encode($v);
+				}
+			}
+			else{
+				$payload = array(
+					'__payload__' => $this->encode($value)
+				);
+			}
+			$payload[$this->key] = $this->encode($key);
+
 			$result = $this->client->putItem(array(
 				'TableName' => isset($table) ? $table : $this->table,
-				'Item' => array(
-					$this->key => $this->encode($key),
-					'payload' => $this->encode($value)
-				)
+				'Item' => $payload
 			));
 			if($result['@metadata']['statusCode'] !== 200){
 				$this->errorhandler->__invoke($result);
