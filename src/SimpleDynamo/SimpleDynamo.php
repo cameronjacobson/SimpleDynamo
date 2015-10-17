@@ -60,8 +60,10 @@ class SimpleDynamo
 			}
 			else{
 				$payload = array();
-				foreach($result['Item'] as $k=>$v){
-					$payload[$k] = $this->decode($v);
+				if($result['Item'] instanceof Traversable){
+					foreach($result['Item'] as $k=>$v){
+						$payload[$k] = $this->decode($v);
+					}
 				}
 				return isset($payload['__payload__']) ? $payload['__payload__'] : $payload;
 			}
