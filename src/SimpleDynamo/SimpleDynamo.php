@@ -74,7 +74,7 @@ class SimpleDynamo
 	public function set($key,$value,$table = null){
 		try{
 			$payload = array();
-			if($value instanceof Traversable){
+			if(is_array($value) || ($value instanceof Traversable)){
 				foreach($value as $k=>$v){
 					$payload[$k] = $this->encode($v);
 				}
