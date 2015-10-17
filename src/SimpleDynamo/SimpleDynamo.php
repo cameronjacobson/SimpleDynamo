@@ -5,6 +5,10 @@ namespace SimpleDynamo;
 use \Aws\DynamoDb\DynamoDbClient;
 use \Aws\DynamoDb\Marshaler;
 
+/**
+ *  https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-dynamodb-2012-08-10.html
+ */
+
 class SimpleDynamo
 {
 	private $client;
