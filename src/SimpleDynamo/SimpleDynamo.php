@@ -39,6 +39,9 @@ class SimpleDynamo
 	}
 
 	private function encode($value){
+		if(is_null($value) || (empty($value) && is_string($value))){
+			return array('NULL'=>true);
+		}
 		return $this->marshaler->marshalValue($value);
 	}
 
