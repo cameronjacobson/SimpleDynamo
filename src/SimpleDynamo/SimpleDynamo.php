@@ -4,6 +4,7 @@ namespace SimpleDynamo;
 
 use \Aws\DynamoDb\DynamoDbClient;
 use \Aws\DynamoDb\Marshaler;
+use \SimpleDynamo\SimpleQuery;
 
 /**
  *  https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-dynamodb-2012-08-10.html
@@ -42,14 +43,14 @@ class SimpleDynamo
 		$this->consistentread = (bool)$v;
 	}
 
-	private function encode($value){
+	public function encode($value){
 		if(is_null($value) || (empty($value) && is_string($value))){
 			return array('NULL'=>true);
 		}
 		return $this->marshaler->marshalValue($value);
 	}
 
-	private function decode($value){
+	public function decode($value){
 		return empty($value) ? array() : $this->marshaler->unmarshalValue($value);
 	}
 
@@ -151,7 +152,12 @@ class SimpleDynamo
 		}
 	}
 
-	private function E($value){
+	public function query($table){
+		$query = new SimpleQuery($this,$this->client,$table);
+		return $query;
+	}
+
+	public function E($value){
 		error_log(var_export($value,true));
 	}
 }
