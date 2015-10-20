@@ -15,7 +15,7 @@ $db = new SimpleDynamo(array(
 ));
 
 // SET VALUE
-$db->set('abc',array(1,2,3,'123'));
+$db->set('abc',array('a'=>1,'b'=>2,'c'=>3,'d'=>'123'));
 
 // GET VALUE
 var_dump(
