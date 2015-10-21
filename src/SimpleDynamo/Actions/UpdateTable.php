@@ -1,5 +1,7 @@
 <?php
 
+/* http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_UpdateTable.html */
+
 namespace SimpleDynamo\Actions;
 
 use \SimpleDynamo\Actions\CommonAction;

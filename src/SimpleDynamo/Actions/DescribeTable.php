@@ -1,11 +1,13 @@
 <?php
 
+/*  */
+
 namespace SimpleDynamo\Actions;
 
 use \SimpleDynamo\Actions\CommonAction;
 use \SimpleDynamo\SimpleDynamo;
 
-class BatchGetItem
+class DescribeTable
 {
 	use CommonAction;
 
