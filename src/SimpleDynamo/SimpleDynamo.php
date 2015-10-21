@@ -12,7 +12,7 @@ use \SimpleDynamo\SimpleQuery;
 
 class SimpleDynamo
 {
-	private $client;
+	private $dbhandle;
 	private $table;
 	private $marshaler;
 	private $consistentread;
@@ -20,7 +20,7 @@ class SimpleDynamo
 	public function __construct(array $params){
 		$this->errorhandler = $params['error'];
 		try{
-			$this->client = DynamoDbClient::factory(array(
+			$this->dbhandle = DynamoDbClient::factory(array(
 				'profile'=> empty($params['profile']) ? 'default' : $params['profile'],
 				'region'=>$params['region'],
 				'version'=>'2012-08-10'
@@ -33,6 +33,10 @@ class SimpleDynamo
 		$this->key = $params['key'];
 		$this->marshaler = new Marshaler();
 		$this->consistentread = isset($params['consistentread']) ? (bool)$params['consistentread'] : true;
+	}
+
+	public function getDbHandle(){
+		return $this->dbhandle;
 	}
 
 	public function getConsistentRead(){
@@ -56,7 +60,7 @@ class SimpleDynamo
 
 	public function get($key,$table = null){
 		try{
-			$result = $this->client->getItem(array(
+			$result = $this->dbhandle->getItem(array(
 				'ConsistentRead' => $this->consistentread,
 				'TableName' => isset($table) ? $table : $this->table,
 				'Key'=>array(
@@ -93,7 +97,7 @@ class SimpleDynamo
 				);
 			}
 			$payload[$this->key] = $this->encode($key);
-			$result = $this->client->putItem(array(
+			$result = $this->dbhandle->putItem(array(
 				'TableName' => isset($table) ? $table : $this->table,
 				'Item' => $payload
 			));
@@ -108,7 +112,7 @@ class SimpleDynamo
 
 	public function delete($key){
 		try{
-			$result = $this->client->deleteItem(array(
+			$result = $this->dbhandle->deleteItem(array(
 				'TableName'=>$this->table,
 				'Key'=>array(
 					$this->key => $this->encode($key)
@@ -125,7 +129,7 @@ class SimpleDynamo
 
 	public function createTable($params){
 		try{
-			$result = $this->client->createTable(array(
+			$result = $this->dbhandle->createTable(array(
 				'TableName' => $this->table,
 				'AttributeDefinitions' => array_map(function($v){
 					return array(
@@ -153,8 +157,21 @@ class SimpleDynamo
 	}
 
 	public function query($table){
-		$query = new SimpleQuery($this,$this->client,$table);
+		$query = new SimpleQuery($this,$this->dbhandle,$table);
 		return $query;
+	}
+
+	public function __call($name,$args){
+		if(preg_match("|[^a-zA-Z]|",$name)){
+			$this->errorhandler->__invoke('Method '.$name.' does not exist');
+		}
+		$classname = '\SimpleDynamo\Actions\\'.$name;
+		if(!class_exists($classname)){
+			$this->errorhandler->__invoke('Method '.$name.' does not exist');
+		}
+		$class = new \ReflectionClass($classname);
+		array_unshift($args, $this);
+		return $class->newInstanceArgs($args);
 	}
 
 	public function E($value){

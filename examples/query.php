@@ -23,15 +23,17 @@ $db->set('abc', array(
 $res = $db->query('sampletable')
 	->addNames(array(
 		'#A' => 'aaa',
+		'#B' => 'bbb',
 		'#index' => 'id'
 	))
 	->addValues(array(
-		':val' => 1,
+		':val1' => 1,
+		':val2' => 2,
 		':id' => 'abc'
 	))
 	->consistent()
 	->rawConstraint('#index = :id')
-	->rawFilter('#A = :val')
+	->rawFilter('#A = :val1 and #B = :val2')
 	->limit(1)
 	->getResults();
 
