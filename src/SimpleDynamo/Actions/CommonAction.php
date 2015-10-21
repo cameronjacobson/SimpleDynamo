@@ -20,7 +20,7 @@ class CommonAction
 		$this->client = $client;
 		$this->db = $client->getDbHandle();
 		$this->table = $table;
-		$this->remoteMethod = $this->getRemoteMethodName(__CLASS__);
+		$this->remoteMethod = $this->getRemoteMethodName(get_called_class());
 		$this->request = array();
 		$this->consistentRead = false;
 		$this->keys = array();
