@@ -7,9 +7,11 @@ namespace SimpleDynamo\Actions;
 use \SimpleDynamo\Actions\CommonAction;
 use \SimpleDynamo\SimpleDynamo;
 
-class UpdateItem
+class UpdateItem extends CommonAction
 {
-	use CommonAction;
+	public function __construct($client, $table = null){
+		parent::__construct($client, $table);
+	}
 
 	private function extractResponse($response){
 		return $response;
