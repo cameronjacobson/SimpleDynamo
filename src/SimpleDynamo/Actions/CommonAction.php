@@ -27,13 +27,28 @@ class CommonAction
 		$this->expressionAttributeNames = array();
 		$this->expressionAttributeValues = array();
 		$this->returnConsumedCapacity = false;
-
+		$this->returnValues = 'NONE';
 		$this->validConsumedCapacity = array(
 			'NONE','TOTAL','INDEXES'
 		);
 		$this->validItemCollectionMetrics = array(
 			'SIZE','NONE'
 		);
+		$this->validReturnValues = array(
+			'NONE','ALL_OLD'
+		);
+	}
+
+	public function limit($val){
+		$this->limit = (int)$val;
+		return $this;
+	}
+
+	public function setReturnValues($val){
+		if(in_array($val,$this->validReturnValues)){
+			$this->returnValues = $val;
+		}
+		return $this;
 	}
 
 	public function consistent($val = true){
@@ -114,12 +129,27 @@ class CommonAction
 
 	public function addKeys(array $keys){
 		foreach($keys as $k=>$v){
-			$this->addKey($k,$v);
+			$this->addKey($k,$v,true);
 		}
 	}
 
-	public function addKey($key,$value){
-		$this->keys[] = array($key,$this->client->encode($value));
+	public function addItem($indexname,$value){
+		$this->item = array(
+			$indexname => $this->client->encode($value)
+		);
+		return $this;
+	}
+
+	public function addKey($key,$value,$multi = false){
+		if($multi){
+			$this->keys[] = array($key,$this->client->encode($value));
+		}
+		else{
+			$this->key = array(
+				$indexname => $this->client->encode($value)
+			);
+		}
+		return $this;
 	}
 
 }

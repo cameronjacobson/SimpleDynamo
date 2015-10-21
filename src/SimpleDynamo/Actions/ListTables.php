@@ -13,7 +13,20 @@ class ListTables extends CommonAction
 		parent::__construct($client, $table);
 	}
 
+	public function startFrom($table){
+		$this->start = $table;
+		return $this;
+	}
+
 	public function generateRequest(){
+		$request = array();
+			
+		if(!empty($this->start)){
+			$request['ExclusiveStartTableName'] = $this->start;
+		};
+		if(!empty($this->limit)){
+			$request['Limit'] = $this->limit;
+		}
 		return $this->request;
 	}
 

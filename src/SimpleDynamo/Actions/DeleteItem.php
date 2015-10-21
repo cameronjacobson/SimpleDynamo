@@ -13,6 +13,39 @@ class DeleteItem extends CommonAction
 		parent::__construct($client, $table);
 	}
 
+	public function conditionalExpression($exp){
+		if(is_callable($exp)){
+			$this->expressions($exp);
+		}
+		else{
+			$this->expression($exp);
+		}
+		return $this;
+	}
+
+	public function generateRequest(){
+		$request = array(
+			'ConditionExpression'=>$this->expression,
+		);
+		if(!empty($this->names)){
+			$request['ExpressionAttributeNames'] = $this->names;
+		}
+		if(!empty($this->values)){
+			$request['ExpressionAttributeValues'] = $this->values;
+		}
+		if(!empty($this->key)){
+			$request['Key'] = $this->key;
+		}
+		if(!empty($this->returnConsumedCapacity)){
+			$request['ReturnConsumedCapacity'] = $this->returnConsumedCapacity;
+		}
+		if(!empty($this->returnItemCollectionMetrics)){
+			$request['ReturnItemCollectionMetrics'] = $this->returnItemCollectionMetrics;
+		}
+		$request['TableName'] = $this->table;
+		return $request;
+	}
+
 	private function extractResponse($response){
 		return $response;
 	}

@@ -13,6 +13,12 @@ class DeleteTable extends CommonAction
 		parent::__construct($client, $table);
 	}
 
+	public function generateRequest(){
+		return array(
+			'TableName' => $this->table
+		);
+	}
+
 	private function extractResponse($response){
 		return $response;
 	}
