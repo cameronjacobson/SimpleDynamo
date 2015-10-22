@@ -22,6 +22,7 @@ class CreateTable extends CommonAction
 		$this->globalIndexes = array();
 		$this->localIndexes = array();
 		$this->throughput = array();
+		$this->schema = array();
 		$this->streamspec = false;
 		$this->validStreamSpecification = array('KEYS_ONLY','NEW_IMAGE','OLD_IMAGE','NEW_AND_OLD_IMAGES');
 		$this->validProjectionType = array('KEYS_ONLY','INCLUDE','ALL');
@@ -32,8 +33,8 @@ class CreateTable extends CommonAction
 	}
 
 	public function addAttributes(array $attributes){
-		foreach($attributes as $attribute){
-			$this->addAttribute($attribute[0],$attribute[1]);
+		foreach($attributes as $name=>$type){
+			$this->addAttribute($name,$type);
 		}
 		return $this;
 	}
@@ -46,8 +47,14 @@ class CreateTable extends CommonAction
 		return $this;
 	}
 
-	public function addSchema(array $schema){
-
+	public function addSchema(array $vals){
+		foreach($vals as $name=>$type){
+			$this->schema[] = array(
+				'AttributeName'=>$name,
+				'KeyType'=>$type
+			);
+		}
+		return $this;
 	}
 
 	public function addGlobal(array $global){
@@ -55,7 +62,7 @@ class CreateTable extends CommonAction
 		foreach($global as $globalname=>$spec){
 			$tmp = array(
 				'IndexName'=>$globalname,
-				'KeySchema'=>$this->schema,
+				'KeySchema'=>array()
 			);
 			if(!empty($spec['keys'])){
 				foreach($spec['keys'] as $name=>$type){
@@ -65,23 +72,22 @@ class CreateTable extends CommonAction
 					);
 				}
 			}
-			if(!empty($spec['attributes']) && is_array($spec['attributes'])){
-				if(is_array($spec['attributes'])){
+			if(!empty($spec['projection'])){
+				if(is_array($spec['projection'])){
 					$tmp['Projection'] = array(
 						'ProjectionType' => 'INCLUDE',
-						'NonKeyAttributes' => $spec['attributes']
+						'NonKeyAttributes' => $spec['projection']
 					);
 				}
-				else if(is_string($spec['attributes']) && in_array($spec['attributes'],$this->validProjectionType)){
+				else if(is_string($spec['projection']) && in_array($spec['projection'],$this->validProjectionType)){
 					$tmp['Projection'] = array(
-						'ProjectionType' => $spec['attributes'],
-						'NonKeyAttributes' => array()
+						'ProjectionType' => $spec['projection']
 					);
 				}
 			}
 			$tmp['ProvisionedThroughput'] = array(
-				'ReadCapacityUnits'=>empty($spec['readcapacity']) ? 1 : $spec['readcapacity'],
-				'WriteCapacityUnits'=>empty($spec['writecapacity']) ? 1 : $spec['writecapacity'],
+				'ReadCapacityUnits'=>empty($spec['throughput'][0]) ? 1 : $spec['throughput'][0],
+				'WriteCapacityUnits'=>empty($spec['throughput'][1]) ? 1 : $spec['throughput'][1],
 			);
 
 			$result[] = $tmp;
@@ -95,6 +101,7 @@ class CreateTable extends CommonAction
 			'ReadCapacityUnits'=>(int)$read,
 			'WriteCapacityUnits'=>(int)$write
 		);
+		return $this;
 	}
 
 	public function addLocal(array $local){
@@ -106,7 +113,7 @@ class CreateTable extends CommonAction
 		foreach($local as $localname=>$spec){
 			$tmp = array(
 				'IndexName'=>$localname,
-				'KeySchema'=>$this->schema,
+				'KeySchema'=>array()
 			);
 			if(!empty($spec['keys'])){
 				foreach($spec['keys'] as $name=>$type){
@@ -116,21 +123,19 @@ class CreateTable extends CommonAction
 					);
 				}
 			}
-			if(!empty($spec['attributes']) && is_array($spec['attributes'])){
-				if(is_array($spec['attributes'])){
+			if(!empty($spec['projection'])){
+				if(is_array($spec['projection'])){
 					$tmp['Projection'] = array(
 						'ProjectionType' => 'INCLUDE',
-						'NonKeyAttributes' => $spec['attributes']
+						'NonKeyAttributes' => $spec['projection']
 					);
 				}
-				else if(is_string($spec['attributes']) && in_array($spec['attributes'],$this->validProjectionType)){
+				else if(is_string($spec['projection']) && in_array($spec['projection'],$this->validProjectionType)){
 					$tmp['Projection'] = array(
-						'ProjectionType' => $spec['attributes'],
-						'NonKeyAttributes' => array()
+						'ProjectionType' => $spec['projection']
 					);
 				}
 			}
-
 			$result[] = $tmp;
 		}
 		$this->local = $result;
@@ -169,7 +174,14 @@ class CreateTable extends CommonAction
 		return $request;
 	}
 
-	private function extractResponse($response){
-		return $response;
+	public function extractResponse($response,$debug = false){
+		$tabledesc = $response->get('TableDescription');
+		if($debug){
+			return $tabledesc;
+		}
+		return array(
+			'arn'=>$tabledesc['TableArn'],
+			'stream_arn'=>$tabledesc['LatestStreamArn']
+		);
 	}
 }

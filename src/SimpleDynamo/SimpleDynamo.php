@@ -127,35 +127,6 @@ class SimpleDynamo
 		}
 	}
 
-	public function createTable($params){
-		try{
-			$result = $this->dbhandle->createTable(array(
-				'TableName' => $this->table,
-				'AttributeDefinitions' => array_map(function($v){
-					return array(
-						'AttributeName' => $v[0],
-						'AttributeType' => 'S',
-					);
-				},$params['keys']),
-				'KeySchema' => array_map(function($v){
-					return array(
-						'AttributeName' => $v[0],
-						'KeyType'       => $v[1],
-					);
-				},$params['keys']),
-				'ProvisionedThroughput' => array(
-					'ReadCapacityUnits'  => $params['readcapacity'],
-					'WriteCapacityUnits' => $params['writecapacity']
-				)
-			));
-			if($result['@metadata']['statusCode'] !== 200){
-				$this->errorhandler->__invoke($result);
-			}
-		}catch(\Exception $e){
-			$this->errorhandler->__invoke($e);
-		}
-	}
-
 	public function query($table){
 		$query = new SimpleQuery($this,$this->dbhandle,$table);
 		return $query;

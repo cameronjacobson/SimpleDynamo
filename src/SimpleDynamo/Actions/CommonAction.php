@@ -3,17 +3,18 @@
 namespace SimpleDynamo\Actions;
 
 use \SimpleDynamo\SimpleDynamo;
+use \Aws\DynamoDb\Exception\DynamoDbException;
 
 class CommonAction
 {
 	public $client;
 	private $db;
-	private $table;
-	private $expression;
+	protected $table;
+	protected $expression;
 	private $request;
 	private $consistentRead;
-	private $expressionAttributeNames;
-	private $expressionAttributeValues;
+	protected $expressionAttributeNames;
+	protected $expressionAttributeValues;
 	private $returnConsumedCapacity;
 
 	public function __construct(SimpleDynamo $client, $table = null){
@@ -59,12 +60,14 @@ class CommonAction
 		if(in_array($val,$this->validConsumedCapacity)){
 			$this->returnConsumedCapacity = $val;
 		}
+		return $this;
 	}
 
 	public function metrics($val){
 		if(in_array($val,$this->validItemCollectionMetrics)){
 			$this->returnItemCollectionMetrics = $val;
 		}
+		return $this;
 	}
 
 	public function expression($expression){
@@ -98,13 +101,26 @@ class CommonAction
 		return lcfirst($class);
 	}
 
-	public function getResults(){
+	public function getResults($debug = false){
 		try{
 			$response = call_user_func(array($this->db, $this->remoteMethod), $this->generateRequest());
 			if($response['@metadata']['statusCode'] !== 200){
 				$this->client->errorhandler->__invoke($response);
 			}
-			return $this->extractResponse($response);
+			return $this->extractResponse($response,$debug);
+		}
+		catch(DynamoDbException $e){
+			switch($e->getAwsErrorCode()){
+				case 'ConditionalCheckFailedException':
+					return false;
+					break;
+				default:
+					var_dump($e->getStatusCode());
+					var_dump($e->getAwsRequestId());
+					var_dump($e->getAwsErrorType());
+					var_dump($e->getAwsErrorCode());
+					break;
+			}
 		}
 		catch(\Exception $e){
 			$this->client->errorhandler->__invoke($e);
@@ -154,7 +170,7 @@ class CommonAction
 		}
 		else{
 			$this->key = array(
-				$indexname => $this->client->encode($value)
+				$key => $this->client->encode($value)
 			);
 		}
 		return $this;

@@ -13,7 +13,7 @@ class DeleteItem extends CommonAction
 		parent::__construct($client, $table);
 	}
 
-	public function conditionalExpression($exp){
+	public function conditional($exp){
 		if(is_callable($exp)){
 			$this->expressions($exp);
 		}
@@ -27,11 +27,11 @@ class DeleteItem extends CommonAction
 		$request = array(
 			'ConditionExpression'=>$this->expression,
 		);
-		if(!empty($this->names)){
-			$request['ExpressionAttributeNames'] = $this->names;
+		if(!empty($this->expressionAttributeNames)){
+			$request['ExpressionAttributeNames'] = $this->expressionAttributeNames;
 		}
-		if(!empty($this->values)){
-			$request['ExpressionAttributeValues'] = $this->values;
+		if(!empty($this->expressionAttributeValues)){
+			$request['ExpressionAttributeValues'] = $this->expressionAttributeValues;
 		}
 		if(!empty($this->key)){
 			$request['Key'] = $this->key;
@@ -46,7 +46,7 @@ class DeleteItem extends CommonAction
 		return $request;
 	}
 
-	private function extractResponse($response){
-		return $response;
+	public function extractResponse($response,$debug = false){
+		return empty($debug) ? true : $response;
 	}
 }

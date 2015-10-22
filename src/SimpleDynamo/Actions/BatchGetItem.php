@@ -84,8 +84,11 @@ class BatchGetItem extends CommonAction
 		return $request;
 	}
 
-	public function extractResponse($response){
+	public function extractResponse($response,$debug = false){
 		$responses = $response->get('Responses');
+		if($debug){
+			return $responses;
+		}
 		foreach($responses as $tablename => $result){
 			foreach($result as $idx => $values){
 				foreach($values as $key => $value){
