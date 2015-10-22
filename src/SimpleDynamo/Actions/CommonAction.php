@@ -6,7 +6,7 @@ use \SimpleDynamo\SimpleDynamo;
 
 class CommonAction
 {
-	private $client;
+	public $client;
 	private $db;
 	private $table;
 	private $expression;
@@ -72,16 +72,24 @@ class CommonAction
 	}
 
 	public function expressions(callable $fn){
-		$this->expression = call_user_func(array($this,$fn));
+		$this->expression = call_user_func($fn->bindTo($this));
 		return $this;
 	}
 
-	private function _and_(array $expressions){
-		return '('.implode(' AND ',$expressions).')';
+	public function _and_(array $expressions){
+		return '( '.implode(' AND ',$expressions).' )';
 	}
 
-	private function _or_(array $expressions){
-		return '('.implode(' OR ',$expressions).')';
+	public function __and(array $expressions){
+		return implode(' AND ',$expressions);
+	}
+
+	public function _or_(array $expressions){
+		return '( '.implode(' OR ',$expressions).' )';
+	}
+
+	public function __or(array $expressions){
+		return implode(' OR ',$expressions);
 	}
 
 	private function getRemoteMethodName($class){

@@ -52,21 +52,29 @@ class BatchGetItem extends CommonAction
 			}
 		}
 		else{
-			$vals = array($indexname,$this->client->encode($value));
+			$vals[$indexname] = $this->client->encode($value);
 		}
 		$this->requests[$this->context]['Keys'][] = $vals;
 		return $this;
 	}
 
-	public function projection(array $projections){
-		$this->requests[$this->context]['ProjectionExpression'] = implode(',',$projections);
+	public function projection($expressions){
+		if(is_callable($expressions)){
+			$this->requests[$this->context]['ProjectionExpression'] = call_user_func($expressions->bindTo($this));
+		}
+		else if(is_string($expressions)){
+			$this->requests[$this->context]['ProjectionExpression'] = $expressions;
+		}
+		else{
+			$this->requests[$this->context]['ProjectionExpression'] = implode(',',$expressions);
+		}
 		return $this;
 	}
 
-	private function generateRequest(){
-		foreach($this->requests as &$request){
-			if(empty($request['ExpressionAttributeNames'])){
-				unset($request['ExpressionAttributeNames']);
+	public function generateRequest(){
+		foreach($this->requests as &$req){
+			if(empty($req['ExpressionAttributeNames'])){
+				unset($req['ExpressionAttributeNames']);
 			}
 		}
 		$request = array(
@@ -76,7 +84,15 @@ class BatchGetItem extends CommonAction
 		return $request;
 	}
 
-	private function extractResponse($response){
-		return $response;
+	public function extractResponse($response){
+		$responses = $response->get('Responses');
+		foreach($responses as $tablename => $result){
+			foreach($result as $idx => $values){
+				foreach($values as $key => $value){
+					$responses[$tablename][$idx][$key] = $this->client->decode($value);
+				}
+			}
+		}
+		return $responses;
 	}
 }
