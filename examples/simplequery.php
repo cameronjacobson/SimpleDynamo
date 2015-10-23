@@ -20,7 +20,7 @@ $db->set('abc', array(
 	'ccc'=>3
 ));
 
-$res = $db->query('sampletable')
+$res = $db->simplequery('sampletable')
 	->addNames(array(
 		'#A' => 'aaa',
 		'#B' => 'bbb',

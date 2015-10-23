@@ -136,12 +136,12 @@ class SimpleDynamo
 			$this->errorhandler->__invoke($e);
 		}
 	}
-/*
-	public function query($table){
+
+	public function simplequery($table){
 		$query = new SimpleQuery($this,$this->dbhandle,$table);
 		return $query;
 	}
-*/
+
 	public function __call($name,$args){
 		if(preg_match("|[^a-zA-Z]|",$name)){
 			$this->errorhandler->__invoke('Method '.$name.' does not exist');
