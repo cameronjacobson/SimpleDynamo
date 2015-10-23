@@ -60,13 +60,13 @@ class BatchGetItem extends CommonAction
 
 	public function projection($expressions){
 		if(is_callable($expressions)){
-			$this->requests[$this->context]['ProjectionExpression'] = call_user_func($expressions->bindTo($this));
+			$this->requests[$this->context] = call_user_func($expressions->bindTo($this));
 		}
 		else if(is_string($expressions)){
-			$this->requests[$this->context]['ProjectionExpression'] = $expressions;
+			$this->requests[$this->context] = $expressions;
 		}
 		else{
-			$this->requests[$this->context]['ProjectionExpression'] = implode(',',$expressions);
+			$this->requests[$this->context] = implode(',',$expressions);
 		}
 		return $this;
 	}

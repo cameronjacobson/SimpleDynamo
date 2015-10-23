@@ -26,16 +26,26 @@ class GetItem extends CommonAction
 	public function generateRequest(){
 		$request = array(
 			'ConsistentRead' => $this->consistentRead,
-			'ExpressionAttributeNames' => $this->names,
+			'ExpressionAttributeNames' => $this->expressionAttributeNames,
 			'Key' => $this->key,
-			'ProjectionExpression' => $this->expression,
+			'ProjectionExpression' => $this->projectionExpression,
 			'ReturnConsumedCapacity' => $this->returnConsumedCapacity,
 			'TableName'=>$this->table,
 		);
 		return $request;
 	}
 
-	private function extractResponse($response){
-		return $response;
+	public function extractResponse($response, $debug = false){
+		if(!empty($response->get('ConsumedCapacity'))){
+			$this->client->E($response->get('ConsumedCapacity'));
+		}
+		if($debug){
+			return $response;
+		}
+		$item = array();
+		foreach($response->get('Item') as $k=>$v){
+			$item[$k] = $this->client->decode($v);
+		}
+		return $item;
 	}
 }

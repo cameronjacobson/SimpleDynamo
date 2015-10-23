@@ -12,14 +12,15 @@ class CommonAction
 	protected $table;
 	protected $expression;
 	private $request;
-	private $consistentRead;
+	protected $consistentRead;
 	protected $expressionAttributeNames;
 	protected $expressionAttributeValues;
-	private $returnConsumedCapacity;
+	protected $returnConsumedCapacity;
 
 	public function __construct(SimpleDynamo $client, $table = null){
 		$this->client = $client;
 		$this->db = $client->getDbHandle();
+		$this->debug = false;
 		$this->table = $table;
 		$this->remoteMethod = $this->getRemoteMethodName(get_called_class());
 		$this->request = array();
@@ -40,6 +41,11 @@ class CommonAction
 		);
 	}
 
+	public function debug(){
+		$this->debug = true;
+		return $this;
+	}
+
 	public function limit($val){
 		$this->limit = (int)$val;
 		return $this;
@@ -54,6 +60,7 @@ class CommonAction
 
 	public function consistent($val = true){
 		$this->consistentRead = (bool)$val;
+		return $this;
 	}
 
 	public function consumed($val){
@@ -101,18 +108,26 @@ class CommonAction
 		return lcfirst($class);
 	}
 
-	public function getResults($debug = false){
+	public function getResults(){
 		try{
 			$response = call_user_func(array($this->db, $this->remoteMethod), $this->generateRequest());
 			if($response['@metadata']['statusCode'] !== 200){
 				$this->client->errorhandler->__invoke($response);
 			}
-			return $this->extractResponse($response,$debug);
+			return $this->extractResponse($response,$this->debug);
 		}
 		catch(DynamoDbException $e){
 			switch($e->getAwsErrorCode()){
 				case 'ConditionalCheckFailedException':
+					$this->client->E('Conditional Check Failed: '.$e->getMessage());
 					return false;
+					break;
+				case 'ResourceNotFoundException':
+					$this->client->E('Resource Not Found: '.$e->getMessage());
+					return false;
+					break;
+				case 'ValidationException':
+					var_dump($e->getMessage());
 					break;
 				default:
 					var_dump($e->getStatusCode());
@@ -172,6 +187,19 @@ class CommonAction
 			$this->key = array(
 				$key => $this->client->encode($value)
 			);
+		}
+		return $this;
+	}
+
+	public function projection($expressions){
+		if(is_callable($expressions)){
+			$this->projectionExpression = call_user_func($expressions->bindTo($this));
+		}
+		else if(is_string($expressions)){
+			$this->projectionExpression = $expressions;
+		}
+		else{
+			$this->projectionExpression = implode(',',$expressions);
 		}
 		return $this;
 	}

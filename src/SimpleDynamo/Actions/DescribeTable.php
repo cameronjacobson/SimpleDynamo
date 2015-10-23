@@ -19,7 +19,7 @@ class DescribeTable extends CommonAction
 		);
 	}
 
-	private function extractResponse($response){
-		return $response;
+	public function extractResponse($response, $debug){
+		return empty($debug) ? $response->get('Table') : $response;
 	}
 }

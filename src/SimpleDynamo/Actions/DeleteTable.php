@@ -19,7 +19,7 @@ class DeleteTable extends CommonAction
 		);
 	}
 
-	private function extractResponse($response){
-		return $response;
+	protected function extractResponse($response,$debug = false){
+		return empty($debug) ? true : $response;
 	}
 }
