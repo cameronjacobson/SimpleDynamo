@@ -17,6 +17,7 @@ class CommonAction
 	protected $expressionAttributeNames;
 	protected $expressionAttributeValues;
 	protected $returnConsumedCapacity;
+	protected $index;
 
 	public function __construct(SimpleDynamo $client, $table = null){
 		$this->client = $client;
@@ -31,6 +32,11 @@ class CommonAction
 		$this->expressionAttributeValues = array();
 		$this->returnConsumedCapacity = false;
 		$this->returnValues = 'NONE';
+        $this->asc = true;
+        $this->count = false;
+        $this->allattributes = false;
+        $this->startKeyValue = false;
+        $this->projectedattributes = false;
 		$this->validConsumedCapacity = array(
 			'NONE','TOTAL','INDEXES'
 		);
@@ -40,6 +46,9 @@ class CommonAction
 		$this->validReturnValues = array(
 			'NONE','ALL_OLD'
 		);
+        $this->validSelectionCriteria = array(
+            'ALL_ATTRIBUTES','ALL_PROJECTED_ATTRIBUTES','SPECIFIC_ATTRIBUTES','COUNT'
+        );
 	}
 
 	public function debug(){
@@ -87,8 +96,13 @@ class CommonAction
 		return $this;
 	}
 
+	public function conditions(callable $fn){
+		$this->conditionExpression = call_user_func($fn->bindTo($this));
+		return $this;
+	}
+
 	public function _and_(array $expressions){
-		return '( '.implode(' AND ',$expressions).' )';
+		return '(( '.implode(') AND (',$expressions).' ))';
 	}
 
 	public function __and(array $expressions){
@@ -140,6 +154,12 @@ class CommonAction
 		}
 		catch(\Exception $e){
 			$this->client->errorhandler->__invoke($e);
+		}
+	}
+
+	protected function optional($key,$value,&$var){
+		if(!empty($value)){
+			$var[$key] = $value;
 		}
 	}
 
@@ -205,5 +225,56 @@ class CommonAction
 		}
 		return $this;
 	}
+
+	public function all(){
+		$this->select = 'ALL_ATTRIBUTES';
+		return $this;
+	}
+
+	public function projected(){
+		$this->select = 'ALL_PROJECTED_ATTRIBUTES';
+		return $this;
+	}
+
+	public function specific(){
+		$this->select = 'SPECIFIC_ATTRIBUTES';
+		return $this;
+	}
+
+	public function startKey($keyname,$val = null){
+		if(is_array($keyname)){
+			$startkey = array();
+			foreach($keyname as $k=>$v){
+				$startkey[$k] = $this->client->encode($v);
+			}
+		}
+		else{
+			$startkey = array($keyname => $this->client->encode($val));
+		}
+		$this->startKeyValue = $startkey;
+		return $this;
+	}
+
+	public function count(){
+		$this->select = 'COUNT';
+		return $this;
+	}
+
+	public function desc($asc = false){
+		$this->asc = (bool)$asc;
+		return $this;
+	}
+
+	public function select($val){
+		if(in_array($val,$this->validSelectionCriteria)){
+			$this->select = $val;
+		}
+		return $this;
+	}
+	public function setIndex($val){
+		$this->index = $val;
+		return $this;
+	}
+
 
 }

@@ -111,12 +111,22 @@ class SimpleDynamo
 	}
 
 	public function delete($key){
+
+		if(is_array($key)){
+			$keys = array();
+			foreach($key as $k=>$v){
+				$keys[$k] = $this->encode($v);
+			}
+		}
+		else{
+			$keys = array(
+				$this->key => $this->encode($key)
+			);
+		}
 		try{
 			$result = $this->dbhandle->deleteItem(array(
 				'TableName'=>$this->table,
-				'Key'=>array(
-					$this->key => $this->encode($key)
-				)
+				'Key'=>$keys
 			));
 			if($result['@metadata']['statusCode'] !== 200){
 				$this->errorhandler->__invoke($result);
@@ -126,12 +136,12 @@ class SimpleDynamo
 			$this->errorhandler->__invoke($e);
 		}
 	}
-
+/*
 	public function query($table){
 		$query = new SimpleQuery($this,$this->dbhandle,$table);
 		return $query;
 	}
-
+*/
 	public function __call($name,$args){
 		if(preg_match("|[^a-zA-Z]|",$name)){
 			$this->errorhandler->__invoke('Method '.$name.' does not exist');
