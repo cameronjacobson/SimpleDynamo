@@ -13,6 +13,7 @@ class CommonAction
 	protected $expression;
 	private $request;
 	protected $consistentRead;
+	protected $item;
 	protected $expressionAttributeNames;
 	protected $expressionAttributeValues;
 	protected $returnConsumedCapacity;
@@ -172,10 +173,11 @@ class CommonAction
 		}
 	}
 
-	public function addItem($indexname,$value){
-		$this->item = array(
-			$indexname => $this->client->encode($value)
-		);
+	public function addItem(array $val){
+		$this->item = array();
+		foreach($val as $k=>$v){
+			$this->item[$k] = $this->client->encode($v);
+		}
 		return $this;
 	}
 

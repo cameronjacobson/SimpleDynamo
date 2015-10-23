@@ -27,7 +27,7 @@ class ListTables extends CommonAction
 		if(!empty($this->limit)){
 			$request['Limit'] = $this->limit;
 		}
-		return $this->request;
+		return $request;
 	}
 
 	public function extractResponse($response){

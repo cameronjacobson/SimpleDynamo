@@ -13,26 +13,26 @@ class PutItem extends CommonAction
 		parent::__construct($client, $table);
 	}
 
-	public function conditionExpression($val){
+	public function conditions($val){
 		if(is_callable($val)){
-			$this->expressions($val);
+			$this->conditionExpression = call_user_func($val->bindTo($this));
 		}
-		else{
-			$this->expression($val);
+		elseif(is_string($val)){
+			$this->conditionExpression = $val;
 		}
 		return $this;
 	}
 
 	public function generateRequest(){
 		$request = array();
-		if(!empty($this->expression)){
-			$request['ConditionExpression'] = $this->expression;
+		if(!empty($this->conditionExpression)){
+			$request['ConditionExpression'] = $this->conditionExpression;
 		}
-		if(!empty($this->names)){
-			$request['ExpressionAttributeNames'] = $this->names;
+		if(!empty($this->expressionAttributeNames)){
+			$request['ExpressionAttributeNames'] = $this->expressionAttributeNames;
 		}
-		if(!empty($this->values)){
-			$request['ExpressionAttributeValues'] = $this->values;
+		if(!empty($this->expressionAttributeValues)){
+			$request['ExpressionAttributeValues'] = $this->expressionAttributeValues;
 		}
 		if(!empty($this->item)){
 			$request['Item'] = $this->item;
@@ -41,10 +41,27 @@ class PutItem extends CommonAction
 		$request['ReturnItemCollectionMetrics'] = $this->returnItemCollectionMetrics;
 		$request['ReturnValues'] = $this->returnValues;
 		$request['TableName'] = $this->table;
-		return array('PutItem' => $request);
+$this->client->E($request);
+		return $request;
 	}
 
-	private function extractResponse($response){
-		return $response;
+	public function extractResponse($response){
+        if(!empty($response->get('ConsumedCapacity'))){
+            $this->client->E($response->get('ConsumedCapacity'));
+        }
+        if($debug){
+            return $response;
+        }
+		$attrs = $response->get('Attributes');
+		
+		return empty($attrs) ? true : $this->decodeResponse($attrs);
+	}
+
+	public function decodeResponse($response){
+		$item = array();
+		foreach($response as $k=>$v){
+			$item[$k] = $this->client->decode($v);
+		}
+		return $item;
 	}
 }

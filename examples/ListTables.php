@@ -14,4 +14,8 @@ $db = new SimpleDynamo(array(
 	}
 ));
 
-var_dump($db->ListTables()->getResults());
+var_dump(
+  $db->ListTables()
+    ->limit(1)
+    ->getResults()
+);
