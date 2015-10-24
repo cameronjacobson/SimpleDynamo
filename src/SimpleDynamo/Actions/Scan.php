@@ -14,8 +14,8 @@ class Scan extends CommonAction
 
 	public function __construct($client, $table = null){
 		parent::__construct($client, $table);
-		$this->segmentNum = false
-		$this->totalSegments = false
+		$this->segmentNum = false;
+		$this->totalSegments = false;
 	}
 
 	public function segment($num,$total){
@@ -31,7 +31,7 @@ class Scan extends CommonAction
 		$this->optional('ExclusiveStartKey',$this->startKeyValue,$request);
 		$this->optional('ExpressionAttributeNames',$this->expressionAttributeNames,$request);
 		$this->optional('ExpressionAttributeValues',$this->expressionAttributeValues,$request);
-		$this->optional('FilterExpression',$this->expression,$request);
+		$this->optional('FilterExpression',$this->filterExpression,$request);
 		$this->optional('IndexName',$this->index,$request);
 		$this->optional('Limit',$this->limit,$request);
 		$this->optional('ProjectionExpression',$this->projectionExpression,$request);
@@ -42,11 +42,20 @@ class Scan extends CommonAction
 
 		// REQUIRED
 		$request['TableName'] = $this->table;
-
 		return $request;
 	}
 
-	public function extractResponse($response){
-		return $response;
+	public function extractResponse($response,$debug = false){
+		if($debug){
+			return $response;
+		}
+		$items = array();
+		foreach($response->get('Items') as $idx=>$item){
+			$items[$idx] = array();
+			foreach($item as $k=>$v){
+				$items[$idx][$k] = $this->client->decode($v);
+			}
+		}
+		return $items;
 	}
 }

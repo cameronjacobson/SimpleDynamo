@@ -96,6 +96,11 @@ class CommonAction
 		return $this;
 	}
 
+	public function filters(callable $fn){
+		$this->filterExpression = call_user_func($fn->bindTo($this));
+		return $this;
+	}
+
 	public function conditions(callable $fn){
 		$this->conditionExpression = call_user_func($fn->bindTo($this));
 		return $this;
