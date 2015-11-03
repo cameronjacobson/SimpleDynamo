@@ -6,22 +6,19 @@ namespace SimpleDynamo\Actions;
 
 use \SimpleDynamo\Actions\CommonAction;
 use \SimpleDynamo\SimpleDynamo;
+use \SimpleDynamo\GlobalIndex;
+use \SimpleDynamo\LocalIndex;
 
 class CreateTable extends CommonAction
 {
-	private $attributes;
 	private $global;
 	private $local;
 	private $schema;
-	private $throughput;
-	private $streamspec;
 
 	public function __construct($client, $table = null){
 		parent::__construct($client, $table);
-		$this->attributes = array();
 		$this->globalIndexes = array();
 		$this->localIndexes = array();
-		$this->throughput = array();
 		$this->schema = array();
 		$this->streamspec = false;
 		$this->validStreamSpecification = array('KEYS_ONLY','NEW_IMAGE','OLD_IMAGE','NEW_AND_OLD_IMAGES');
@@ -30,21 +27,6 @@ class CreateTable extends CommonAction
 			'ReadCapacityUnits'=>1,
 			'WriteCapacityUnits'=>1,
 		);
-	}
-
-	public function addAttributes(array $attributes){
-		foreach($attributes as $name=>$type){
-			$this->addAttribute($name,$type);
-		}
-		return $this;
-	}
-
-	public function addAttribute($name,$type){
-		$this->attributes[] = array(
-			'AttributeName'=>$name,
-			'AttributeType'=>$type
-		);
-		return $this;
 	}
 
 	public function addSchema(array $vals){
@@ -57,98 +39,17 @@ class CreateTable extends CommonAction
 		return $this;
 	}
 
-	public function addGlobal(array $global){
-		$result = array();
-		foreach($global as $globalname=>$spec){
-			$tmp = array(
-				'IndexName'=>$globalname,
-				'KeySchema'=>array()
-			);
-			if(!empty($spec['keys'])){
-				foreach($spec['keys'] as $name=>$type){
-					$tmp['KeySchema'][] = array(
-						'AttributeName'=>$name,
-						'KeyType'=>$type
-					);
-				}
-			}
-			if(!empty($spec['projection'])){
-				if(is_array($spec['projection'])){
-					$tmp['Projection'] = array(
-						'ProjectionType' => 'INCLUDE',
-						'NonKeyAttributes' => $spec['projection']
-					);
-				}
-				else if(is_string($spec['projection']) && in_array($spec['projection'],$this->validProjectionType)){
-					$tmp['Projection'] = array(
-						'ProjectionType' => $spec['projection']
-					);
-				}
-			}
-			$tmp['ProvisionedThroughput'] = array(
-				'ReadCapacityUnits'=>empty($spec['throughput'][0]) ? 1 : $spec['throughput'][0],
-				'WriteCapacityUnits'=>empty($spec['throughput'][1]) ? 1 : $spec['throughput'][1],
-			);
-
-			$result[] = $tmp;
-		}
-		$this->global = $result;
+	public function addGlobal($indexName, callable $fn){
+		$index = new GlobalIndex($indexName);
+		call_user_func($fn->bindTo($index));
+		$this->global[] = $index->getSpec();
 		return $this;
 	}
 
-	public function throughput($read = 1, $write = 1){
-		$this->throughput = array(
-			'ReadCapacityUnits'=>(int)$read,
-			'WriteCapacityUnits'=>(int)$write
-		);
-		return $this;
-	}
-
-	public function addLocal(array $local){
-		if(empty($this->schema)){
-			// need error here: cant set local indexes without schema
-			return;
-		}
-		$result = array();
-		foreach($local as $localname=>$spec){
-			$tmp = array(
-				'IndexName'=>$localname,
-				'KeySchema'=>array()
-			);
-			if(!empty($spec['keys'])){
-				foreach($spec['keys'] as $name=>$type){
-					$tmp['KeySchema'][] = array(
-						'AttributeName'=>$name,
-						'KeyType'=>$type
-					);
-				}
-			}
-			if(!empty($spec['projection'])){
-				if(is_array($spec['projection'])){
-					$tmp['Projection'] = array(
-						'ProjectionType' => 'INCLUDE',
-						'NonKeyAttributes' => $spec['projection']
-					);
-				}
-				else if(is_string($spec['projection']) && in_array($spec['projection'],$this->validProjectionType)){
-					$tmp['Projection'] = array(
-						'ProjectionType' => $spec['projection']
-					);
-				}
-			}
-			$result[] = $tmp;
-		}
-		$this->local = $result;
-		return $this;
-	}
-
-	public function stream($val,$enabled = true){
-		if(in_array($val,$this->validStreamSpecification)){
-			$this->streamspec = array(
-				'StreamEnabled'=>$enabled,
-				'StreamViewType'=>$val
-			);
-		}
+	public function addLocal($indexName, callable $fn){
+		$index = new LocalIndex($indexName);
+		call_user_func($fn->bindTo($index));
+		$this->local[] = $index->getSpec();
 		return $this;
 	}
 

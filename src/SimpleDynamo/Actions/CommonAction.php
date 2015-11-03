@@ -18,6 +18,9 @@ class CommonAction
 	protected $expressionAttributeValues;
 	protected $returnConsumedCapacity;
 	protected $index;
+	protected $attributes;
+	protected $throughput;
+	protected $streamspec;
 
 	public function __construct(SimpleDynamo $client, $table = null){
 		$this->client = $client;
@@ -32,11 +35,12 @@ class CommonAction
 		$this->expressionAttributeValues = array();
 		$this->returnConsumedCapacity = false;
 		$this->returnValues = 'NONE';
-        $this->asc = true;
-        $this->count = false;
-        $this->allattributes = false;
-        $this->startKeyValue = false;
-        $this->projectedattributes = false;
+		$this->asc = true;
+		$this->count = false;
+		$this->attributes = array();
+		$this->allattributes = false;
+		$this->startKeyValue = false;
+		$this->projectedattributes = false;
 		$this->validConsumedCapacity = array(
 			'NONE','TOTAL','INDEXES'
 		);
@@ -46,9 +50,42 @@ class CommonAction
 		$this->validReturnValues = array(
 			'NONE','ALL_OLD'
 		);
-        $this->validSelectionCriteria = array(
-            'ALL_ATTRIBUTES','ALL_PROJECTED_ATTRIBUTES','SPECIFIC_ATTRIBUTES','COUNT'
-        );
+		$this->validSelectionCriteria = array(
+			'ALL_ATTRIBUTES','ALL_PROJECTED_ATTRIBUTES','SPECIFIC_ATTRIBUTES','COUNT'
+		);
+	}
+
+	public function addAttributes(array $attributes){
+		foreach($attributes as $name=>$type){
+			$this->addAttribute($name,$type);
+		}
+		return $this;
+	}
+
+	public function addAttribute($name,$type){
+		$this->attributes[] = array(
+			'AttributeName'=>$name,
+			'AttributeType'=>$type
+		);
+		return $this;
+	}
+
+	public function stream($val,$enabled = true){
+		if(in_array($val,$this->validStreamSpecification)){
+			$this->streamspec = array(
+				'StreamEnabled'=>$enabled,
+				'StreamViewType'=>$val
+			);
+		}
+		return $this;
+	}
+
+	public function throughput($read = 1, $write = 1){
+		$this->throughput = array(
+			'ReadCapacityUnits'=>(int)$read,
+			'WriteCapacityUnits'=>(int)$write
+		);
+		return $this;
 	}
 
 	public function debug(){

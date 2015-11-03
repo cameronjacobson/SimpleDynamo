@@ -24,39 +24,35 @@ $db->CreateTable('mytabletest'.time())
      'local1'=>'N',
      'local2'=>'N'
   ))
-  ->addGlobal(array(
-    'globalindex'=>array(
-      'keys'=>array(
-        'global0'=>'HASH',
-        'global1'=>'RANGE'
-      ),
-      'projection'=>array(
-        'col1',
-        'col2'
-      ),
-      'throughput'=>array(1,1)
-    )
-  ))
+  ->addGlobal('globalindex',function(){
+    $this->addKeys(array(
+      'global0'=>'HASH',
+      'global1'=>'RANGE'
+    ));
+    $this->projection(array(
+      'col1',
+      'col2'
+    ));
+    $this->throughput(1,1);
+  })
   ->addSchema(array(
     'id1'=>'HASH',
     'id2'=>'RANGE'
   ))
-  ->addLocal(array(
-    'localindex'=>array(
-      'keys'=>array(
-        'id1'=>'HASH',
-        'local1'=>'RANGE'
-      ),
-      'projection'=>'ALL'
-    ),
-    'localindex2'=>array(
-      'keys'=>array(
-        'id1'=>'HASH',
-        'local2'=>'RANGE'
-      ),
-      'projection'=>'KEYS_ONLY'
-    ),
-  ))
+  ->addLocal('localindex',function(){
+    $this->addKeys(array(
+      'id1'=>'HASH',
+      'local1'=>'RANGE'
+    ));
+    $this->projection('ALL');
+  })
+  ->addLocal('localindex2',function(){
+    $this->addKeys(array(
+      'id1'=>'HASH',
+      'local2'=>'RANGE'
+    ));
+    $this->projection('KEYS_ONLY');
+  })
   ->throughput(1,1)
   ->stream('NEW_AND_OLD_IMAGES')
   ->getResults()
