@@ -15,8 +15,8 @@ class CreateTable extends CommonAction
 	private $local;
 	private $schema;
 
-	public function __construct($client, $table = null){
-		parent::__construct($client, $table);
+	public function __construct($client, $table = null, $async = false){
+		parent::__construct($client, $table, $async);
 		$this->globalIndexes = array();
 		$this->localIndexes = array();
 		$this->schema = array();

@@ -22,12 +22,13 @@ class CommonAction
 	protected $throughput;
 	protected $streamspec;
 
-	public function __construct(SimpleDynamo $client, $table = null){
+	public function __construct(SimpleDynamo $client, $table = null, $async = false){
 		$this->client = $client;
 		$this->db = $client->getDbHandle();
 		$this->debug = false;
+		$this->async = $async;
 		$this->table = $table;
-		$this->remoteMethod = $this->getRemoteMethodName(get_called_class());
+		$this->remoteMethod = $this->getRemoteMethodName(get_called_class(),$async);
 		$this->request = array();
 		$this->consistentRead = false;
 		$this->keys = array();
@@ -159,15 +160,42 @@ class CommonAction
 		return implode(' OR ',$expressions);
 	}
 
-	private function getRemoteMethodName($class){
+	private function getRemoteMethodName($class,$async = false){
 		$parts = explode('\\',$class);
 		$class = array_pop($parts);
-		return lcfirst($class);
+		return lcfirst($class). ($async ? 'Async' : '');
+	}
+
+	public function then(){
+		if(empty($this->promise)){
+			return false;
+		}
+		$client = $this->client;
+		$success = function($response){
+			return $this->extractResponse($response, $this->debug);
+		};
+		$error = function($response){
+			return $this->client->errorhandler->__invoke($response);
+		};
+		return $this->promise->then($success->bindTo($this), $error->bindTo($this));
+	}
+
+	public function wait(){
+		if(empty($this->promise)){
+			return false;
+		}
+		return $this->promise->wait();
 	}
 
 	public function getResults(){
 		try{
 			$response = call_user_func(array($this->db, $this->remoteMethod), $this->generateRequest());
+			switch(get_class($response)){
+				case 'GuzzleHttp\Promise\Promise':
+					$this->promise = $response;
+					return $this->then();
+					break;
+			}
 			if($response['@metadata']['statusCode'] !== 200){
 				$this->client->errorhandler->__invoke($response);
 			}

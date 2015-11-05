@@ -12,8 +12,8 @@ class UpdateItem extends CommonAction
 	private $cExpression;
 	private $uExpression;
 
-	public function __construct($client, $table = null){
-		parent::__construct($client, $table);
+	public function __construct($client, $table = null, $async = false){
+		parent::__construct($client, $table, $async);
 		$this->setUpdates = null;
 		$this->addUpdates = null;
 		$this->deleteUpdates = null;

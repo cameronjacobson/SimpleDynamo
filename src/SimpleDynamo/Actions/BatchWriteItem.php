@@ -11,8 +11,8 @@ class BatchWriteItem extends CommonAction
 {
 	private $context;
 
-	public function __construct($client, $table = null){
-		parent::__construct($client, $table);
+	public function __construct($client, $table = null,$async = false){
+		parent::__construct($client, $table, $async);
 		$this->returnConsumedCapacity = 'NONE';
 		$this->returnItemCollectionsMetrics = 'NONE';
 		$this->requests = array();

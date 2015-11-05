@@ -19,6 +19,7 @@ class SimpleDynamo
 
 	public function __construct(array $params){
 		$this->errorhandler = $params['error'];
+		$this->errorhandler->bindTo($this);
 		try{
 			$this->dbhandle = DynamoDbClient::factory(array(
 				'profile'=> empty($params['profile']) ? 'default' : $params['profile'],
@@ -145,6 +146,13 @@ class SimpleDynamo
 	public function __call($name,$args){
 		if(preg_match("|[^a-zA-Z]|",$name)){
 			$this->errorhandler->__invoke('Method '.$name.' does not exist');
+		}
+		if(substr($name,-5) === 'Async'){
+			$args[] = true;
+			$name = substr($name,0,-5);
+		}
+		else{
+			$args[] = false;
 		}
 		$classname = '\SimpleDynamo\Actions\\'.$name;
 		if(!class_exists($classname)){

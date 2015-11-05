@@ -12,8 +12,8 @@ class Scan extends CommonAction
 	private $whichSegment;
 	private $totalSegments;
 
-	public function __construct($client, $table = null){
-		parent::__construct($client, $table);
+	public function __construct($client, $table = null, $async = false){
+		parent::__construct($client, $table, $async);
 		$this->segmentNum = false;
 		$this->totalSegments = false;
 	}

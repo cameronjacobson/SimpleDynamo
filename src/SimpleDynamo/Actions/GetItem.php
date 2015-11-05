@@ -9,8 +9,8 @@ use \SimpleDynamo\SimpleDynamo;
 
 class GetItem extends CommonAction
 {
-	public function __construct($client, $table = null){
-		parent::__construct($client, $table);
+	public function __construct($client, $table = null, $async = false){
+		parent::__construct($client, $table, $async);
 	}
 
 	public function projectionExpression($val){
