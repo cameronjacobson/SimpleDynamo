@@ -33,8 +33,8 @@ class DeleteItem extends CommonAction
 		if(!empty($this->expressionAttributeValues)){
 			$request['ExpressionAttributeValues'] = $this->expressionAttributeValues;
 		}
-		if(!empty($this->key)){
-			$request['Key'] = $this->key;
+		if(!empty($this->delete_keys)){
+			$request['Key'] = $this->delete_keys;
 		}
 		if(!empty($this->returnConsumedCapacity)){
 			$request['ReturnConsumedCapacity'] = $this->returnConsumedCapacity;

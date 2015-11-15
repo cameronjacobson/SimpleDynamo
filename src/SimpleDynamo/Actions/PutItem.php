@@ -37,11 +37,10 @@ class PutItem extends CommonAction
 		if(!empty($this->item)){
 			$request['Item'] = $this->item;
 		}
-		$request['ReturnConsumedCapacity'] = $this->returnConsumedCapacity;
+		$request['ReturnConsumedCapacity'] = $this->returnConsumedCapacity ?: 'NONE';
 		$request['ReturnItemCollectionMetrics'] = $this->returnItemCollectionMetrics;
 		$request['ReturnValues'] = $this->returnValues;
 		$request['TableName'] = $this->table;
-$this->client->E($request);
 		return $request;
 	}
 

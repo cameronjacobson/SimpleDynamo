@@ -32,6 +32,7 @@ class CommonAction
 		$this->request = array();
 		$this->consistentRead = false;
 		$this->keys = array();
+		$this->delete_keys = array();
 		$this->expressionAttributeNames = array();
 		$this->expressionAttributeValues = array();
 		$this->returnConsumedCapacity = false;
@@ -267,6 +268,19 @@ class CommonAction
 		$this->item = array();
 		foreach($val as $k=>$v){
 			$this->item[$k] = $this->client->encode($v);
+		}
+		return $this;
+	}
+
+	public function deleteKey($key,$value = null){
+		if(is_array($key)){
+			foreach($key as $k=>&$v){
+				$v = $this->client->encode($v);
+			}
+			$this->delete_keys = $key;
+		}
+		else{
+			$this->delete_keys[$key] = $this->client->encode($value);
 		}
 		return $this;
 	}

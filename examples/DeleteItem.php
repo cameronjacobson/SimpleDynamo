@@ -21,7 +21,7 @@ $db->set('blah',array(
 
 var_dump(
 $db->DeleteItem('sampletable')
-  ->addKey('id','blah')
+  ->deleteKey('id','blah')
   ->addNames(array(
     '#A'=>'ggg',
     '#B'=>'hhh'
