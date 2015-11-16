@@ -69,6 +69,7 @@ class UpdateItem extends CommonAction
 			$this->expression($exp);
 		}
 		$this->uExpression = $this->expression;
+		return $this;
 	}
 
 	public function generateRequest(){
@@ -93,23 +94,23 @@ class UpdateItem extends CommonAction
 			$request['UpdateExpression'] = $this->uExpression;
 		}
 
-		if(!empty($this->names)){
-			$request['ExpressionAttributeNames'] = $this->names;
+		if(!empty($this->expressionAttributeNames)){
+			$request['ExpressionAttributeNames'] = $this->expressionAttributeNames;
 		}
-		if(!empty($this->values)){
-			$request['ExpressionAttributeValues'] = $this->values;
+		if(!empty($this->expressionAttributeValues)){
+			$request['ExpressionAttributeValues'] = $this->expressionAttributeValues;
 		}
 		if(!empty($this->update_keys)){
 			$request['Key'] = $this->update_keys;
 		}
-		$request['ReturnConsumedCapacity'] = $this->returnConsumedCapacity;
-		$request['ReturnItemCollectionMetrics'] = $this->returnItemCollectionMetrics;
+		$request['ReturnConsumedCapacity'] = empty($this->returnConsumedCapacity) ? 'NONE' : $this->returnConsumedCapacity;
+		$request['ReturnItemCollectionMetrics'] = empty($this->returnItemCollectionMetrics) ? 'NONE' : $this->returnItemCollectionMetrics;
 		$request['ReturnValues'] = $this->returnValues;
 		$request['TableName'] = $this->table;
-		return array('UpdateItem' => $request);
+		return $request;
 	}
 
-	private function extractResponse($response){
+	public function extractResponse($response){
 		return $response;
 	}
 }
