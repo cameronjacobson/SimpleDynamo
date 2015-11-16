@@ -23,8 +23,8 @@ class Query extends CommonAction
 		$this->optional('FilterExpression',$this->expression,$request);
 		$this->optional('KeyConditionExpression',$this->conditionExpression,$request);
 		$this->optional('IndexName',$this->index,$request);
-		$this->optional('Limit',$this->limit,$request);
-		$this->optional('ProjectionExpression',$this->projectionExpression,$request);
+		$this->optional('Limit',empty($this->limit) ? null : $this->limit,$request);
+		$this->optional('ProjectionExpression',empty($this->projectionExpression) ? null : $this->projectionExpression,$request);
 		$this->optional('ReturnConsumedCapacity',$this->returnConsumedCapacity,$request);
 		$this->optional('Select',$this->select,$request);
 
@@ -42,11 +42,12 @@ class Query extends CommonAction
 			return $response;
 		}
 		$items = $response->get('Items');
-		foreach($items as &$item){
-			foreach($item as $k=>&$v){
-				$v = $this->client->decode($v);
+		$return = array();
+		foreach($items as $k1=>$item){
+			foreach($item as $k2=>$v){
+				$return[$k1][$k2] = $this->client->decode($v);
 			}
 		}
-		return $items;
+		return $return;
 	}
 }

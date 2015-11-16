@@ -99,8 +99,8 @@ class UpdateItem extends CommonAction
 		if(!empty($this->values)){
 			$request['ExpressionAttributeValues'] = $this->values;
 		}
-		if(!empty($this->key)){
-			$request['Key'] = $this->key;
+		if(!empty($this->update_keys)){
+			$request['Key'] = $this->update_keys;
 		}
 		$request['ReturnConsumedCapacity'] = $this->returnConsumedCapacity;
 		$request['ReturnItemCollectionMetrics'] = $this->returnItemCollectionMetrics;

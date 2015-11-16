@@ -22,7 +22,7 @@ $db->set('abc',array(
 
 var_dump(
   $db->UpdateItem('sampletable')
-    ->addKeys(array(
+    ->updateKeys(array(
 		'id1'=>42,
 		'id2'=>'abc'
 	))

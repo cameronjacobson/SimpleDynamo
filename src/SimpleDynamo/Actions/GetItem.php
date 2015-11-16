@@ -26,12 +26,19 @@ class GetItem extends CommonAction
 	public function generateRequest(){
 		$request = array(
 			'ConsistentRead' => $this->consistentRead,
-			'ExpressionAttributeNames' => $this->expressionAttributeNames,
-			'Key' => $this->key,
-			'ProjectionExpression' => $this->projectionExpression,
-			'ReturnConsumedCapacity' => $this->returnConsumedCapacity,
+			'Key' => $this->get_keys,
+			'ReturnConsumedCapacity' => empty($this->returnConsumedCapacity) ? 'NONE' : $this->returnConsumedCapacity,
 			'TableName'=>$this->table,
 		);
+
+		if(!empty($this->projectionExpression)){
+			$request['ProjectionExpression'] = $this->projectionExpression;
+		}
+
+		if(!empty($this->expressionAttributeNames)){
+			$request['ExpressionAttributeNames'] = $this->expressionAttributeNames;
+		}
+
 		return $request;
 	}
 
@@ -43,8 +50,10 @@ class GetItem extends CommonAction
 			return $response;
 		}
 		$item = array();
-		foreach($response->get('Item') as $k=>$v){
-			$item[$k] = $this->client->decode($v);
+		if(!empty($response->get('Item'))){
+			foreach($response->get('Item') as $k=>$v){
+				$item[$k] = $this->client->decode($v);
+			}
 		}
 		return $item;
 	}

@@ -200,6 +200,7 @@ class CommonAction
 			if($response['@metadata']['statusCode'] !== 200){
 				$this->client->errorhandler->__invoke($response);
 			}
+
 			return $this->extractResponse($response,$this->debug);
 		}
 		catch(DynamoDbException $e){
@@ -213,7 +214,7 @@ class CommonAction
 					return false;
 					break;
 				case 'ValidationException':
-					var_dump($e->getMessage());
+					$this->client->E($e->getMessage());
 					break;
 				default:
 					var_dump($e->getStatusCode());
@@ -281,6 +282,32 @@ class CommonAction
 		}
 		else{
 			$this->delete_keys[$key] = $this->client->encode($value);
+		}
+		return $this;
+	}
+
+	public function updateKey($key,$value = null){
+		if(is_array($key)){
+			foreach($key as $k=>&$v){
+				$v = $this->client->encode($v);
+			}
+			$this->update_keys = $key;
+		}
+		else{
+			$this->update_keys[$key] = $this->client->encode($value);
+		}
+		return $this;
+	}
+
+	public function getKey($key,$value = null){
+		if(is_array($key)){
+			foreach($key as $k=>&$v){
+				$v = $this->client->encode($v);
+			}
+			$this->get_keys = $key;
+		}
+		else{
+			$this->get_keys[$key] = $this->client->encode($value);
 		}
 		return $this;
 	}
