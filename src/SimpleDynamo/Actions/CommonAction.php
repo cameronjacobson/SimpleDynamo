@@ -223,6 +223,7 @@ class CommonAction
 					var_dump($e->getAwsErrorCode());
 					break;
 			}
+			$this->client->errorhandler->__invoke($e);
 		}
 		catch(\Exception $e){
 			$this->client->errorhandler->__invoke($e);
