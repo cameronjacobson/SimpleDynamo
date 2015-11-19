@@ -292,10 +292,10 @@ class CommonAction
 			foreach($key as $k=>&$v){
 				$v = $this->client->encode($v);
 			}
-			$this->update_keys = $key;
+			$this->update_key = $key;
 		}
 		else{
-			$this->update_keys[$key] = $this->client->encode($value);
+			$this->update_key[$key] = $this->client->encode($value);
 		}
 		return $this;
 	}
